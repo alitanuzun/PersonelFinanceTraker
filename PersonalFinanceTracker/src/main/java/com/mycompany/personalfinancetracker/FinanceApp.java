@@ -20,6 +20,22 @@ public class FinanceApp extends javax.swing.JFrame {
     
     private List<Transaction> transactions = new ArrayList<>();
     private List<Budget> budgets = new ArrayList<>();
+    
+    private void checkBudgetLimit(String category)
+    {
+        double totalExpense = transactions.stream().filter(t -> t.getType().equalsIgnoreCase("Expense")&& t.getCategory().equalsIgnoreCase(category)).mapToDouble(Transaction :: getAmount).sum();
+        
+        for(Budget b : budgets)
+        {
+            if(b.getCategory().equalsIgnoreCase(category))
+            {
+                if(totalExpense > b.getLimit())
+                {
+                    JOptionPane.showMessageDialog(this, "Budget limit exceeded for category: " + category + "\nLimit: " + b.getLimit() + "\nSpent: " + totalExpense);
+                }
+            }
+        }
+    }
     /**
      * Creates new form FinanceApp
      */
@@ -391,6 +407,11 @@ public class FinanceApp extends javax.swing.JFrame {
 
         // JSON'a kaydet
         FileManager.saveTransactions(transactions);
+        
+        if (type.equalsIgnoreCase("Expense"))
+        {
+            checkBudgetLimit(category);
+        }
 
         // Tabloya ekle
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
